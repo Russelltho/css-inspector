@@ -1,89 +1,111 @@
 <script>
-  import { fade } from "svelte/transition";
+  import { onMount } from "svelte";
 
-  let cssRules = [];
-  let focusBox;
-  let inspector;
-  let searchInput;
-  let target;
-  let targetRect;
+  import Rule from "./Rule.svelte";
 
-  function handleKeydown(event) {
+  export let target = null;
+
+  let position = 0;
+  let query = "";
+  let search;
+
+  onMount(() => search.focus());
+
+  const tailwind = Array.from(document.styleSheets).find(styleSheet =>
+    styleSheet.href.includes("tailwind")
+  );
+
+  // This is computed based on query
+  $: cssRules = Array.from(tailwind.cssRules)
+    .filter(cssRule => {
+      if (cssRule.type !== 1) {
+        return false;
+      }
+
+      if (!cssRule.selectorText.startsWith(".")) {
+        return false;
+      }
+
+      const matchesQuery = query
+        ? query
+            .split(" ")
+            .map(fragment => fragment.trim())
+            .filter(Boolean)
+            .every(fragment => cssRule.cssText.includes(fragment))
+        : true;
+
+      if (!matchesQuery) {
+        return false;
+      }
+
+      return true;
+    })
+    .sort((a, b) => a.selectorText.localeCompare(b.selectorText));
+
+  // Computed based on cssRules
+  $: matching = cssRules.filter(cssRule => target.matches(cssRule.selectorText));
+
+  // Computed by cssRules + position
+  $: selected = matching.concat(cssRules)[position];
+
+  function handleKeyDown(event) {
     const { key } = event;
 
-    if (key === "/") {
-      searchInput.focus();
-      event.preventDefault();
+    if (key === "Enter") {
+      const className = selected.selectorText.slice(1);
+
+      if (target.matches(selected.selectorText)) {
+        target.classList.remove(className);
+      } else {
+        target.classList.add(className);
+      }
     }
 
-    if (key === "Escape") {
-      searchInput.blur();
+    if (key === "ArrowUp") {
+      position = Math.max(position - 1, 0);
+    }
+
+    if (key === "ArrowDown") {
+      position = Math.min(cssRules.length, position + 1);
     }
   }
 
-  function handleMouseOver(event) {
-    // Ignore html,body
-    if (
-      [document.documentElement, document.body].includes(event.target) ||
-      event.target.closest("#inspector")
-    ) {
-      target = null;
-      targetRect = null;
+  function handleSearch(event) {
+    const value = event.target.value.trim().toLowerCase();
 
-      return;
+    if (query !== value) {
+      position = 0;
+      query = event.target.value;
     }
-
-    target = event.target;
-    targetRect = target.getBoundingClientRect();
-  }
-
-  function loadClassNames() {
-    const tailwind = Array.from(document.styleSheets).find(styleSheet =>
-      styleSheet.href.includes("tailwind")
-    );
-
-    cssRules = Array.from(tailwind.cssRules)
-      .filter(
-        cssRule => cssRule.type === 1 && cssRule.selectorText.startsWith(".")
-      )
-      .sort((a, b) => a.selectorText.localeCompare(b.selectorText));
-  }
-
-  function findRulesForTarget(target) {
-    const classes = Array.from(target.classList);
-    const matching = cssRules.filter(cssRule =>
-      classes.includes(cssRule.selectorText.slice(1))
-    );
-
-    console.log(matching);
-
-    return matching;
   }
 </script>
 
-<svelte:window on:load={loadClassNames} on:mouseover={handleMouseOver} on:keydown={handleKeydown}/>
+<svelte:window on:keydown={handleKeyDown} />
 
-{#if target}
-  <div
-    bind:this={focusBox}
-    class="fixed pin-t pin-l w-full h-full bg-grey-darker opacity-50 pointer-events-none text-black"
-    style="transition: all 200ms ease-out; clip-path: polygon(0 0, 100% 0, 100% 100%, {targetRect.right}px 100%, {targetRect.right}px {targetRect.top}px, {targetRect.left}px {targetRect.top}px, {targetRect.left}px {targetRect.bottom}px, {targetRect.right}px {targetRect.bottom}px, {targetRect.right}px 100%, 0 100%)"
-    transition:fade
+<aside class="h-full w-64 flex flex-col bg-grey-darkest fixed pin-b pin-r text-white shadow-lg border-l">
+  <label class="p-2 font-mono text-sm opacity-75">
+    &lt;{target.tagName.toLowerCase()}&gt;
+  </label>
+
+  <input
+    bind:this={search}
+    class="shadow-md bg-grey-darker focus:bg-white border-transparent focus:border-blue-light p-2 static"
+    focus
+    on:keyup={handleSearch}
+    placeholder='Search...'
   />
 
-  <aside
-    id="inspector"
-    class="bg-grey-darkest fixed pin-b pin-r text-white m-6 shadow-md p-2 rounded w-64"
-    transition:fade
-  >
-    <input bind:this={searchInput} class="w-full bg-grey-darker focus:bg-white border-transparent focus:border-blue-light" placeholder='Search ("/")'>
-
-    <ul>
-    {#each findRulesForTarget(target) as cssRule (cssRule.selectorText)}
-      <li>{cssRule.selectorText}</li>
+  <ul class="py-2 list-reset overflow-auto">
+    {#each matching as rule (rule.selectorText)}
+      <Rule {rule} {selected} {target} />
     {/each}
-    </ul>
-  </aside>
-{/if}
 
+    <li class="text-xs opacity-50 px-2 py-1 my-2 tracking-wide bg-black">
+      All Rules
+    </li>
 
+    {#each cssRules as rule (rule.selectorText)}
+      <Rule {rule} {selected} {target} />
+    {/each}
+  </ul>
+</aside>
