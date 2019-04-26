@@ -1,6 +1,7 @@
 <script>
-  import { onMount } from "svelte";
+  import { fly } from "svelte/transition";
 
+  import { onMount } from "svelte";
   import Rule from "./Rule.svelte";
 
   export let target = null;
@@ -9,7 +10,15 @@
   let query = "";
   let search;
 
-  onMount(() => search.focus());
+  onMount(() => {
+    document.body.style.transition = "margin-right 300ms";
+    document.body.style.marginRight = "16rem";
+    search.focus();
+  });
+
+  function transitionBody() {
+    document.body.style.marginRight = "inherit";
+  }
 
   const tailwind = Array.from(document.styleSheets).find(styleSheet =>
     styleSheet.href.includes("tailwind")
@@ -59,6 +68,9 @@
       } else {
         target.classList.add(className);
       }
+
+      // Force re-assignment & updating
+      target = target;
     }
 
     if (key === "ArrowUp") {
@@ -82,7 +94,11 @@
 
 <svelte:window on:keydown={handleKeyDown} />
 
-<aside class="h-full w-64 flex flex-col bg-grey-darkest fixed pin-b pin-r text-white shadow-lg border-l">
+<aside
+  class="h-full w-64 flex flex-col bg-grey-darkest fixed pin-b pin-r text-white shadow-lg border-l"
+  transition:fly="{{ x: 255, duration: 300 }}"
+  on:outrostart={transitionBody}
+>
   <label class="p-2 font-mono text-sm opacity-75">
     &lt;{target.tagName.toLowerCase()}&gt;
   </label>
