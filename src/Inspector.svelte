@@ -63,11 +63,7 @@
     if (key === "Enter") {
       const className = selected.selectorText.slice(1);
 
-      if (target.matches(selected.selectorText)) {
-        target.classList.remove(className);
-      } else {
-        target.classList.add(className);
-      }
+      target.classList.toggle(className);
 
       // Force re-assignment & updating
       target = target;
