@@ -24,7 +24,7 @@
 	}
 </script>
 
-<svelte:window on:keydown={handleKeydown}/>
+<svelte:window on:load={() => target = document.querySelector("button")} on:keydown={handleKeydown}/>
 
 <div id="root" class="bg-teal-lightest min-h-screen">
 	<main class="py-6">
