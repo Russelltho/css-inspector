@@ -95,10 +95,6 @@
   transition:fly="{{ x: 255, duration: 300 }}"
   on:outrostart={transitionBody}
 >
-  <label class="p-2 font-mono text-sm opacity-75">
-    &lt;{target.tagName.toLowerCase()}&gt;
-  </label>
-
   <input
     bind:this={search}
     class="shadow-md bg-grey-darker focus:bg-white border-transparent focus:border-blue-light p-2 static"
