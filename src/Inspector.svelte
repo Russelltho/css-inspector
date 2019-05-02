@@ -35,13 +35,35 @@
         return false;
       }
 
-      const matchesQuery = query
-        ? query
-            .split(" ")
-            .map(fragment => fragment.trim())
-            .filter(Boolean)
-            .every(fragment => cssRule.cssText.includes(fragment))
-        : true;
+      if (!query) {
+        return true;
+      }
+
+      const tokens = query
+        .split(" ")
+        .map(fragment => fragment.trim())
+        .filter(Boolean);
+
+      if (!tokens.includes("-") && cssRule.selectorText.startsWith(".-")) {
+        return false;
+      }
+
+      if (
+        !tokens.includes("focus") &&
+        cssRule.selectorText.startsWith(".focus")
+      ) {
+        return false;
+      }
+      if (
+        !tokens.includes("hover") &&
+        cssRule.selectorText.startsWith(".hover")
+      ) {
+        return false;
+      }
+
+      const matchesQuery = tokens.every(fragment =>
+        cssRule.cssText.includes(fragment)
+      );
 
       if (!matchesQuery) {
         return false;
