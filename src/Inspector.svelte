@@ -49,7 +49,18 @@
 
       return true;
     })
-    .sort((a, b) => a.selectorText.localeCompare(b.selectorText));
+    .sort((a, b) => {
+      return a.selectorText.split("-").reduce((sorted, partA, i) => {
+        if (sorted) return sorted;
+
+        const partB = b.selectorText.split("-")[i];
+
+        if (partA < partB) return -1;
+        if (partA > partB) return 1;
+
+        return 0;
+      });
+    });
 
   // Computed based on cssRules
   $: matching = cssRules.filter(cssRule => target.matches(cssRule.selectorText));
