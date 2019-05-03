@@ -24,8 +24,7 @@
     styleSheet.href.includes("tailwind")
   );
 
-  // This is computed based on query
-  $: cssRules = Array.from(tailwind.cssRules)
+  const cssRules = Array.from(tailwind.cssRules)
     .filter(cssRule => {
       if (cssRule.type !== 1) {
         return false;
@@ -35,66 +34,75 @@
         return false;
       }
 
-      if (!query) {
-        return true;
-      }
-
-      const tokens = query
-        .split(" ")
-        .map(fragment => fragment.trim())
-        .filter(Boolean);
-
-      if (!tokens.includes("-") && cssRule.selectorText.startsWith(".-")) {
-        return false;
-      }
-
-      if (
-        !tokens.includes("focus") &&
-        cssRule.selectorText.startsWith(".focus")
-      ) {
-        return false;
-      }
-      if (
-        !tokens.includes("hover") &&
-        cssRule.selectorText.startsWith(".hover")
-      ) {
-        return false;
-      }
-
-      const matchesQuery = tokens.every(fragment =>
-        cssRule.cssText.includes(fragment)
-      );
-
-      if (!matchesQuery) {
-        return false;
-      }
-
       return true;
     })
     .sort((a, b) => {
-      return a.selectorText.split("-").reduce((sorted, partA, i) => {
-        if (sorted) return sorted;
+      const [aString, aNumber] = a.selectorText.split(/(\d+$)/);
+      const [bString, bNumber] = b.selectorText.split(/(\d+$)/);
 
-        const partB = b.selectorText.split("-")[i];
-
-        if (partA < partB) return -1;
-        if (partA > partB) return 1;
-
-        return 0;
-      });
+      return aString.localeCompare(bString) || aNumber - bNumber;
     });
 
+  // This is computed based on query
+  $: filtered = cssRules.filter(cssRule => {
+    if (!query) {
+      return true;
+    }
+
+    const tokens = query
+      .split(" ")
+      .map(fragment => fragment.trim())
+      .filter(Boolean);
+
+    if (!tokens.includes("-") && cssRule.selectorText.startsWith(".-")) {
+      return false;
+    }
+
+    if (!tokens.includes("focus") && cssRule.selectorText.startsWith(".focus")) {
+      return false;
+    }
+    if (!tokens.includes("hover") && cssRule.selectorText.startsWith(".hover")) {
+      return false;
+    }
+
+    const matchesQuery = tokens.every(fragment =>
+      cssRule.cssText.includes(fragment)
+    );
+
+    if (!matchesQuery) {
+      return false;
+    }
+
+    return true;
+  });
+
   // Computed based on cssRules
-  $: matching = cssRules.filter(cssRule => target.matches(cssRule.selectorText));
+  $: matching = filtered.filter(cssRule => target.matches(cssRule.selectorText));
 
   // Computed by cssRules + position
-  $: selected = matching.concat(cssRules)[position];
+  $: selected = matching.concat(filtered)[position];
 
   function handleKeyDown(event) {
     const { key } = event;
 
     if (key === "Enter") {
       const className = selected.selectorText.slice(1);
+      const changing = String(Object.values(selected.style));
+
+      for (const existing of target.classList) {
+        const cssRule = cssRules.find(
+          cssRule => cssRule.selectorText.slice(1) === existing
+        );
+
+        if (
+          cssRule &&
+          className !== existing &&
+          String(Object.values(selected.style)) ===
+            String(Object.values(cssRule.style))
+        ) {
+          target.classList.toggle(existing);
+        }
+      }
 
       target.classList.toggle(className);
 
@@ -147,7 +155,7 @@
       All Rules
     </li>
 
-    {#each cssRules as rule (rule.selectorText)}
+    {#each filtered as rule (rule.selectorText)}
       <Rule {rule} {selected} {target} />
     {/each}
   </ul>
