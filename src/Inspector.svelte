@@ -99,6 +99,7 @@
       target.classList.toggle(className);
 
       // Force re-assignment & updating
+      query = "";
       target = target;
     }
 
@@ -130,6 +131,7 @@
 >
   <input
     bind:this={search}
+    bind:value={query}
     class="shadow-md bg-grey-darker focus:bg-white border-transparent focus:border-blue-light p-2 static"
     focus
     on:keyup={handleSearch}
