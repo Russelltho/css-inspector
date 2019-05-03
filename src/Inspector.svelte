@@ -85,6 +85,10 @@
   function handleKeyDown(event) {
     const { key } = event;
 
+    if (key === "/") {
+      search.focus();
+    }
+
     if (key === "Enter") {
       const className = selected.selectorText.slice(1);
       const changing = String(Object.values(selected.style));
