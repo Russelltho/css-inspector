@@ -1,10 +1,9 @@
 <script>
   import { fly } from "svelte/transition";
-
   import { onMount } from "svelte";
-  import Rule from "./Rule.svelte";
 
-  export let target;
+  import Rule from "./Rule.svelte";
+  import { cssRules, target } from "./stores";
 
   let position = 0;
   let query = "";
@@ -20,31 +19,8 @@
     document.body.style.marginRight = "inherit";
   }
 
-  const tailwind = Array.from(document.styleSheets).find(styleSheet =>
-    styleSheet.href.includes("tailwind")
-  );
-
-  const cssRules = Array.from(tailwind.cssRules)
-    .filter(cssRule => {
-      if (cssRule.type !== 1) {
-        return false;
-      }
-
-      if (!cssRule.selectorText.startsWith(".")) {
-        return false;
-      }
-
-      return true;
-    })
-    .sort((a, b) => {
-      const [aString, aNumber] = a.selectorText.split(/(\d+$)/);
-      const [bString, bNumber] = b.selectorText.split(/(\d+$)/);
-
-      return aString.localeCompare(bString) || aNumber - bNumber;
-    });
-
   // This is computed based on query
-  $: filtered = cssRules.filter(cssRule => {
+  $: filtered = $cssRules.filter(cssRule => {
     if (!query) {
       return true;
     }
@@ -77,7 +53,7 @@
   });
 
   // Computed based on cssRules
-  $: matching = filtered.filter(cssRule => target.matches(cssRule.selectorText));
+  $: matching = filtered.filter(cssRule => $target.matches(cssRule.selectorText));
 
   // Computed by cssRules + position
   $: selected = matching.concat(filtered)[position];
@@ -93,7 +69,7 @@
       const className = selected.selectorText.slice(1);
       const changing = String(Object.values(selected.style));
 
-      for (const existing of target.classList) {
+      for (const existing of $target.classList) {
         const cssRule = cssRules.find(
           cssRule => cssRule.selectorText.slice(1) === existing
         );
@@ -104,15 +80,15 @@
           String(Object.values(selected.style)) ===
             String(Object.values(cssRule.style))
         ) {
-          target.classList.toggle(existing);
+          $target.classList.toggle(existing);
         }
       }
 
-      target.classList.toggle(className);
+      $target.classList.toggle(className);
 
       // Force re-assignment & updating
       query = "";
-      target = target;
+      $target = $target;
     }
 
     if (key === "ArrowUp") {
@@ -160,7 +136,7 @@
     </li>
 
     {#each filtered as rule (rule.selectorText)}
-      <Rule {rule} {selected} {target} />
+      <Rule {rule} {selected} />
     {/each}
   </ul>
 </aside>

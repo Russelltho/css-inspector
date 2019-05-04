@@ -1,11 +1,12 @@
 <script>
+  import { target } from "./stores";
+
   export let rule;
   export let selected;
-  export let target;
 </script>
 
 <li class="cursor-pointer flex items-start font-mono font-hairline text-xs py-1 px-2 {rule === selected ? "bg-grey-dark" : ""}">
-  <input checked={target.matches(rule.selectorText)} class="mr-2" type="checkbox" />
+  <input checked={$target.matches(rule.selectorText)} class="mr-2" type="checkbox" />
 
   <label class="cursor-pointer">
     {rule.selectorText.slice(1).replace('\\', "").replace(':hover', "")}
