@@ -1,10 +1,10 @@
 <script>
-  export let value = null;
+  import { target } from "./stores";
 
   let rect;
 
   function handleClick(event) {
-    value = event.target;
+    $target = event.target;
   }
 
   function handleMouseMove(event) {
