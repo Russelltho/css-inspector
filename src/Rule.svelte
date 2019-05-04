@@ -2,7 +2,6 @@
   import { currentRule, target } from "./stores";
 
   export let rule;
-  export let selected;
 </script>
 
 <li
@@ -15,7 +14,7 @@
   <label class="cursor-pointer">
     {rule.selectorText.slice(1).replace('\\', "").replace(':hover', "")}
 
-    {#if rule === selected}
+    {#if rule === $currentRule}
       <code class="mt-1 block opacity-75">
         {rule.cssText.replace(rule.selectorText, "").trim()}
       </code>
