@@ -4,7 +4,7 @@
   import { onMount } from "svelte";
   import Rule from "./Rule.svelte";
 
-  export let target = null;
+  export let target;
 
   let position = 0;
   let query = "";
