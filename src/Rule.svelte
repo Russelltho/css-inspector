@@ -8,6 +8,7 @@
   class="cursor-pointer flex items-start font-mono font-hairline text-xs py-1 px-2 hover:bg-grey-dark"
   on:mouseenter={() => $currentRule = rule}
   on:mouseleave={() => $currentRule = null}
+  on:click
 >
   <input checked={$target.matches(rule.selectorText)} class="mr-2" type="checkbox" />
 
