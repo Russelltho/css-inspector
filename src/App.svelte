@@ -31,7 +31,7 @@
 
 {#if $active}
 	{#if $target}
-		<Inspector target={$target} />
+		<Inspector />
 	{:else}
 		<Selector />
 	{/if}

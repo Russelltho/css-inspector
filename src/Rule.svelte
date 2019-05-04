@@ -1,11 +1,15 @@
 <script>
-  import { target } from "./stores";
+  import { currentRule, target } from "./stores";
 
   export let rule;
   export let selected;
 </script>
 
-<li class="cursor-pointer flex items-start font-mono font-hairline text-xs py-1 px-2 {rule === selected ? "bg-grey-dark" : ""}">
+<li
+  class="cursor-pointer flex items-start font-mono font-hairline text-xs py-1 px-2 hover:bg-grey-dark"
+  on:mouseenter={() => $currentRule = rule}
+  on:mouseleave={() => $currentRule = null}
+>
   <input checked={$target.matches(rule.selectorText)} class="mr-2" type="checkbox" />
 
   <label class="cursor-pointer">

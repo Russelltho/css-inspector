@@ -3,11 +3,57 @@
   import { onMount } from "svelte";
 
   import Rule from "./Rule.svelte";
-  import { cssRules, target } from "./stores";
+  import { cssRules, currentRule, target } from "./stores";
+  import { getClassName } from "./utils";
 
   let position = 0;
   let query = "";
   let search;
+
+  // Track which rule we're previewing, so we can toggle the class effectively
+  let previousRule;
+  let existingClasses = [];
+
+  const toggleRule = cssRule => {
+    const className = getClassName(cssRule);
+
+    if (existingClasses.includes(className)) {
+      $target.classList.remove(className);
+    } else {
+      $target.classList.add(className);
+    }
+  };
+
+  target.subscribe(newTarget => {
+    existingClasses = [...newTarget.classList];
+  });
+
+  currentRule.subscribe(newRule => {
+    // Reset the classes back to how they were
+    if (previousRule) {
+      const className = getClassName(previousRule);
+
+      if (existingClasses.includes(className)) {
+        $target.classList.add(className);
+      } else {
+        $target.classList.remove(className);
+      }
+    }
+
+    // Preview the new rule
+    if (newRule) {
+      const className = getClassName(newRule);
+
+      if (existingClasses.includes(className)) {
+        $target.classList.remove(className);
+      } else {
+        $target.classList.add(className);
+      }
+    }
+
+    // Save so we can toggle it again
+    previousRule = newRule;
+  });
 
   onMount(() => {
     document.body.style.transition = "margin-right 300ms";
