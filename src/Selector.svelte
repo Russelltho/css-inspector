@@ -1,26 +1,25 @@
 <script>
-  export let value = null;
+  import { target } from "./stores";
+
+  function isEligible(node) {
+    return (
+      // Ignore html,body
+      ![document.documentElement, document.body].includes(node) &&
+      // Ignore the inspector itself
+      !node.closest("#inspector")
+    );
+  }
 
   let rect;
 
   function handleClick(event) {
-    value = event.target;
+    if (isEligible(event.target)) {
+      $target = event.target;
+    }
   }
 
   function handleMouseMove(event) {
-    const { target } = event;
-
-    if (
-      // Ignore html,body
-      [document.documentElement, document.body].includes(target) ||
-      target.closest("#inspector")
-    ) {
-      rect = null;
-
-      return;
-    }
-
-    rect = target.getBoundingClientRect();
+    rect = isEligible(event.target) ? event.target.getBoundingClientRect() : null;
   }
 </script>
 

@@ -1,35 +1,38 @@
 <script>
 	import Inspector from "./Inspector.svelte";
 	import Selector from "./Selector.svelte";
-
-	// TODO Make this false by default
-	let active = true; // false;
-	let target;
+	import { active, target } from "./stores";
 
 	function handleKeydown(event) {
 	  const { key } = event;
 
 	  if (key === "/") {
-	    active = true;
 	    event.preventDefault();
+	    $active = true;
 	  }
 
 	  if (key === "Escape") {
-	    if (target) {
-	      target = null;
-	    } else if (active) {
-	      active = false;
+	    // Cancel out of Inspector
+	    if ($target) {
+	      $target = null;
+	      return;
+	    }
+
+	    // Cancel out of Selector
+	    if ($active) {
+	      $active = false;
+	      return;
 	    }
 	  }
 	}
 </script>
 
-<svelte:window on:load={() => target = document.querySelector("button")} on:keydown={handleKeydown}/>
+<svelte:window on:keydown={handleKeydown}/>
 
-{#if active}
-	{#if target}
-		<Inspector target={target} />
+{#if $active}
+	{#if $target}
+		<Inspector />
 	{:else}
-		<Selector bind:value={target} />
+		<Selector />
 	{/if}
 {/if}
