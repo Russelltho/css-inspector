@@ -4,10 +4,10 @@
   export let target;
 </script>
 
-<li class="flex items-start font-mono font-hairline text-xs py-1 px-2 {rule === selected ? "bg-grey-dark" : ""}">
+<li class="cursor-pointer flex items-start font-mono font-hairline text-xs py-1 px-2 {rule === selected ? "bg-grey-dark" : ""}">
   <input checked={target.matches(rule.selectorText)} class="mr-2" type="checkbox" />
 
-  <label>
+  <label class="cursor-pointer">
     {rule.selectorText.slice(1).replace('\\', "").replace(':hover', "")}
 
     {#if rule === selected}
