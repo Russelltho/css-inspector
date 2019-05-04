@@ -1,31 +1,36 @@
 <script>
   import { fly } from "svelte/transition";
   import { onMount } from "svelte";
+  import { get } from "svelte/store";
 
   import Rule from "./Rule.svelte";
-  import { cssRules, currentRule, target } from "./stores";
+  import { cssRules, currentRule, query, target } from "./stores";
   import { getClassName } from "./utils";
 
-  let position = 0;
-  let query = "";
   let search;
 
   // Track which rule we're previewing, so we can toggle the class effectively
   let previousRule;
   let existingClasses = [];
 
-  const toggleRule = cssRule => {
-    const className = getClassName(cssRule);
+  // TODO Should these go on custom $target store?
+  function addClassName(className) {
+    get(target).classList.add(className);
+    existingClasses = [...get(target).classList].sort();
+  }
+  function removeClassName(className) {
+    get(target).classList.remove(className);
+    existingClasses = [...get(target).classList].sort();
+  }
 
-    if (existingClasses.includes(className)) {
-      $target.classList.remove(className);
-    } else {
-      $target.classList.add(className);
-    }
-  };
+  $: existingRules = existingClasses
+    .map(className => {
+      return $cssRules.find(cssRule => className === getClassName(cssRule));
+    })
+    .filter(Boolean);
 
   target.subscribe(newTarget => {
-    existingClasses = [...newTarget.classList];
+    existingClasses = newTarget ? [...newTarget.classList].sort() : [];
   });
 
   currentRule.subscribe(newRule => {
@@ -34,9 +39,9 @@
       const className = getClassName(previousRule);
 
       if (existingClasses.includes(className)) {
-        $target.classList.add(className);
+        get(target).classList.add(className);
       } else {
-        $target.classList.remove(className);
+        get(target).classList.remove(className);
       }
     }
 
@@ -45,9 +50,9 @@
       const className = getClassName(newRule);
 
       if (existingClasses.includes(className)) {
-        $target.classList.remove(className);
+        get(target).classList.remove(className);
       } else {
-        $target.classList.add(className);
+        get(target).classList.add(className);
       }
     }
 
@@ -61,17 +66,30 @@
     search.focus();
   });
 
+  function toggleCurrentRule() {
+    const className = getClassName($currentRule);
+
+    if (existingClasses.includes(className)) {
+      removeClassName(className);
+    } else {
+      addClassName(className);
+    }
+
+    $query = "";
+    search.focus();
+  }
+
   function transitionBody() {
     document.body.style.marginRight = "inherit";
   }
 
   // This is computed based on query
   $: filtered = $cssRules.filter(cssRule => {
-    if (!query) {
+    if (!$query) {
       return true;
     }
 
-    const tokens = query
+    const tokens = $query
       .split(" ")
       .map(fragment => fragment.trim())
       .filter(Boolean);
@@ -98,12 +116,6 @@
     return true;
   });
 
-  // Computed based on cssRules
-  $: matching = filtered.filter(cssRule => $target.matches(cssRule.selectorText));
-
-  // Computed by cssRules + position
-  $: selected = matching.concat(filtered)[position];
-
   function handleKeyDown(event) {
     const { key } = event;
 
@@ -112,46 +124,7 @@
     }
 
     if (key === "Enter") {
-      const className = selected.selectorText.slice(1);
-      const changing = String(Object.values(selected.style));
-
-      for (const existing of $target.classList) {
-        const cssRule = cssRules.find(
-          cssRule => cssRule.selectorText.slice(1) === existing
-        );
-
-        if (
-          cssRule &&
-          className !== existing &&
-          String(Object.values(selected.style)) ===
-            String(Object.values(cssRule.style))
-        ) {
-          $target.classList.toggle(existing);
-        }
-      }
-
-      $target.classList.toggle(className);
-
-      // Force re-assignment & updating
-      query = "";
-      $target = $target;
-    }
-
-    if (key === "ArrowUp") {
-      position = Math.max(position - 1, 0);
-    }
-
-    if (key === "ArrowDown") {
-      position = Math.min(cssRules.length, position + 1);
-    }
-  }
-
-  function handleSearch(event) {
-    const value = event.target.value.trim().toLowerCase();
-
-    if (query !== value) {
-      position = 0;
-      query = event.target.value;
+      toggleCurrentRule();
     }
   }
 </script>
@@ -165,16 +138,15 @@
 >
   <input
     bind:this={search}
-    bind:value={query}
+    bind:value={$query}
     class="shadow-md bg-grey-darker focus:bg-white border-transparent focus:border-blue-light p-2 static"
     focus
-    on:keyup={handleSearch}
     placeholder='Search...'
   />
 
   <ul class="py-2 list-reset overflow-auto">
-    {#each matching as rule (rule.selectorText)}
-      <Rule {rule} {selected} {target} />
+    {#each existingRules as rule (rule.selectorText)}
+      <Rule {rule} on:click={toggleCurrentRule} />
     {/each}
 
     <li class="text-xs opacity-50 px-2 py-1 my-2 tracking-wide bg-black">
@@ -182,7 +154,7 @@
     </li>
 
     {#each filtered as rule (rule.selectorText)}
-      <Rule {rule} {selected} />
+      <Rule {rule} on:click={toggleCurrentRule} />
     {/each}
   </ul>
 </aside>
