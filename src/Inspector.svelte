@@ -1,4 +1,5 @@
 <script>
+  import { groupBy } from "lodash-es";
   import { fly } from "svelte/transition";
   import { onMount } from "svelte";
   import { get } from "svelte/store";
@@ -116,6 +117,20 @@
     return true;
   });
 
+  $: groupedRules = Object.entries(
+    groupBy(filtered, cssRule => {
+      return cssRule.style.cssText
+        .split(";")
+        .filter(Boolean)
+        .map(style => style.split(":").shift())
+        .filter(Boolean)
+        .join(", ");
+    })
+  )
+    // Remove properties that can't be applied (e.g. touch)
+    .filter(([properties]) => Boolean(properties))
+    .sort(([a], [b]) => a.localeCompare(b));
+
   function handleKeyDown(event) {
     const { key } = event;
 
@@ -144,17 +159,21 @@
     placeholder='Search...'
   />
 
-  <ul class="py-2 list-reset overflow-auto">
+  <ul class="pb-2 list-reset overflow-auto">
     {#each existingRules as rule (rule.selectorText)}
       <Rule {rule} on:click={toggleCurrentRule} />
     {/each}
 
-    <li class="text-xs opacity-50 px-2 py-1 my-2 tracking-wide bg-black">
-      All Rules
-    </li>
+    {#each groupedRules as [name, rules]}
+      <li>
+        <label class="shadow-inner sticky pin-t block text-xs opacity-75 px-2 py-1 my-2 tracking-wide bg-black">
+          {name}
+        </label>
 
-    {#each filtered as rule (rule.selectorText)}
-      <Rule {rule} on:click={toggleCurrentRule} />
+        {#each rules as rule (rule.selectorText)}
+          <Rule {rule} on:click={toggleCurrentRule} />
+        {/each}
+      </li>
     {/each}
   </ul>
 </aside>
