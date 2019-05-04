@@ -10,8 +10,6 @@
   on:mouseleave={() => $currentRule = null}
   on:click
 >
-  <input checked={$target.matches(rule.selectorText)} class="mr-2" type="checkbox" />
-
   <label class="cursor-pointer">
     {rule.selectorText.slice(1).replace('\\', "").replace(':hover', "")}
 
