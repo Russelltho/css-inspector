@@ -1,4 +1,5 @@
 <script>
+  import { groupBy } from "lodash-es";
   import { fly } from "svelte/transition";
   import { onMount } from "svelte";
   import { get } from "svelte/store";
@@ -18,16 +19,11 @@
     get(target).classList.add(className);
     existingClasses = [...get(target).classList].sort();
   }
+
   function removeClassName(className) {
     get(target).classList.remove(className);
     existingClasses = [...get(target).classList].sort();
   }
-
-  $: existingRules = existingClasses
-    .map(className => {
-      return $cssRules.find(cssRule => className === getClassName(cssRule));
-    })
-    .filter(Boolean);
 
   target.subscribe(newTarget => {
     existingClasses = newTarget ? [...newTarget.classList].sort() : [];
@@ -84,26 +80,29 @@
   }
 
   // This is computed based on query
-  $: filtered = $cssRules.filter(cssRule => {
+  $: filteredRules = $cssRules.filter(cssRule => {
     if (!$query) {
       return true;
     }
+
+    const className = getClassName(cssRule);
 
     const tokens = $query
       .split(" ")
       .map(fragment => fragment.trim())
       .filter(Boolean);
 
-    if (!tokens.includes("-") && cssRule.selectorText.startsWith(".-")) {
-      return false;
-    }
+    // TODO How should we filter the psuedo classes?
+    // if (!tokens.includes("-") && className.startsWith("-")) {
+    //   return false;
+    // }
 
-    if (!tokens.includes("focus") && cssRule.selectorText.startsWith(".focus")) {
-      return false;
-    }
-    if (!tokens.includes("hover") && cssRule.selectorText.startsWith(".hover")) {
-      return false;
-    }
+    // if (!tokens.includes("focus") && className.startsWith("focus:")) {
+    //   return false;
+    // }
+    // if (!tokens.includes("hover") && className.startsWith("hover:")) {
+    //   return false;
+    // }
 
     const matchesQuery = tokens.every(fragment =>
       cssRule.cssText.includes(fragment)
@@ -115,6 +114,28 @@
 
     return true;
   });
+
+  $: existingRules = existingClasses
+    .map(existingClass => {
+      return filteredRules.find(
+        cssRule => existingClass === getClassName(cssRule)
+      );
+    })
+    .filter(Boolean);
+
+  $: groupedRules = Object.entries(
+    groupBy(filteredRules, cssRule => {
+      return cssRule.style.cssText
+        .split(";")
+        .filter(Boolean)
+        .map(style => style.split(":").shift())
+        .filter(Boolean)
+        .join(", ");
+    })
+  )
+    // Remove properties that can't be applied (e.g. touch)
+    .filter(([properties]) => Boolean(properties))
+    .sort(([a], [b]) => a.localeCompare(b));
 
   function handleKeyDown(event) {
     const { key } = event;
@@ -144,17 +165,28 @@
     placeholder='Search...'
   />
 
-  <ul class="py-2 list-reset overflow-auto">
-    {#each existingRules as rule (rule.selectorText)}
-      <Rule {rule} on:click={toggleCurrentRule} />
-    {/each}
+  <ul class="pb-2 list-reset overflow-auto">
+    <li>
+      <label class="shadow-inner sticky pin-t block text-xs opacity-75 px-2 py-1 my-2 tracking-wide bg-black">
+        Current Styles
+      </label>
 
-    <li class="text-xs opacity-50 px-2 py-1 my-2 tracking-wide bg-black">
-      All Rules
+      {#each existingRules as rule (rule.selectorText)}
+        <Rule {rule} on:click={toggleCurrentRule} />
+      {/each}
     </li>
 
-    {#each filtered as rule (rule.selectorText)}
-      <Rule {rule} on:click={toggleCurrentRule} />
+    {#each groupedRules as [name, rules]}
+      <li>
+        <label class="shadow-inner sticky pin-t block text-xs px-2 py-1 my-2 tracking-wide bg-black">
+          {name}
+          <small class="float-right rounded bg-black px-1 py-px bg-grey-darkest">{rules.length}</small>
+        </label>
+
+        {#each rules as rule (rule.selectorText)}
+          <Rule {rule} on:click={toggleCurrentRule} />
+        {/each}
+      </li>
     {/each}
   </ul>
 </aside>

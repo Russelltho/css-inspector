@@ -1,6 +1,8 @@
 <script>
   import { currentRule, target } from "./stores";
 
+  import { getClassName } from "./utils";
+
   export let rule;
 </script>
 
@@ -11,7 +13,7 @@
   on:click
 >
   <label class="cursor-pointer">
-    {rule.selectorText.slice(1).replace('\\', "").replace(':hover', "")}
+    {getClassName(rule)}
 
     {#if rule === $currentRule}
       <code class="mt-1 block opacity-75">
