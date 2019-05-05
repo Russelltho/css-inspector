@@ -1,7 +1,8 @@
 export const getClassName = cssRule => {
-  // shover\:text-purple:hover
+  // .hover\:text-purple:hover
+  // => hover:text-purple
   return cssRule.selectorText
-    .slice(1)
+    .replace(/^\./, "")
     .replace("\\:", ":")
     .replace(/:active$/, "")
     .replace(/:focus$/, "")
