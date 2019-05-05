@@ -25,8 +25,8 @@
   }
 
   $: existingRules = existingClasses
-    .map(className => {
-      return $cssRules.find(cssRule => className === getClassName(cssRule));
+    .map(existingClass => {
+      return $cssRules.find(cssRule => existingClass === getClassName(cssRule));
     })
     .filter(Boolean);
 
