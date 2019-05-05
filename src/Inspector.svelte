@@ -25,12 +25,6 @@
     existingClasses = [...get(target).classList].sort();
   }
 
-  $: existingRules = existingClasses
-    .map(existingClass => {
-      return $cssRules.find(cssRule => existingClass === getClassName(cssRule));
-    })
-    .filter(Boolean);
-
   target.subscribe(newTarget => {
     existingClasses = newTarget ? [...newTarget.classList].sort() : [];
   });
@@ -86,7 +80,7 @@
   }
 
   // This is computed based on query
-  $: filtered = $cssRules.filter(cssRule => {
+  $: filteredRules = $cssRules.filter(cssRule => {
     if (!$query) {
       return true;
     }
@@ -118,8 +112,16 @@
     return true;
   });
 
+  $: existingRules = existingClasses
+    .map(existingClass => {
+      return filteredRules.find(
+        cssRule => existingClass === getClassName(cssRule)
+      );
+    })
+    .filter(Boolean);
+
   $: groupedRules = Object.entries(
-    groupBy(filtered, cssRule => {
+    groupBy(filteredRules, cssRule => {
       return cssRule.style.cssText
         .split(";")
         .filter(Boolean)
