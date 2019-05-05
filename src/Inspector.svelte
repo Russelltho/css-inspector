@@ -19,6 +19,7 @@
     get(target).classList.add(className);
     existingClasses = [...get(target).classList].sort();
   }
+
   function removeClassName(className) {
     get(target).classList.remove(className);
     existingClasses = [...get(target).classList].sort();
@@ -160,14 +161,21 @@
   />
 
   <ul class="pb-2 list-reset overflow-auto">
-    {#each existingRules as rule (rule.selectorText)}
-      <Rule {rule} on:click={toggleCurrentRule} />
-    {/each}
+    <li>
+      <label class="shadow-inner sticky pin-t block text-xs opacity-75 px-2 py-1 my-2 tracking-wide bg-black">
+        Current Styles
+      </label>
+
+      {#each existingRules as rule (rule.selectorText)}
+        <Rule {rule} on:click={toggleCurrentRule} />
+      {/each}
+    </li>
 
     {#each groupedRules as [name, rules]}
       <li>
-        <label class="shadow-inner sticky pin-t block text-xs opacity-75 px-2 py-1 my-2 tracking-wide bg-black">
+        <label class="shadow-inner sticky pin-t block text-xs px-2 py-1 my-2 tracking-wide bg-black">
           {name}
+          <small class="float-right rounded bg-black px-1 py-px bg-grey-darkest">{rules.length}</small>
         </label>
 
         {#each rules as rule (rule.selectorText)}
