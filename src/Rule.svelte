@@ -1,6 +1,5 @@
 <script>
   import { currentRule, target } from "./stores";
-
   import { getClassName } from "./utils";
 
   export let rule;
