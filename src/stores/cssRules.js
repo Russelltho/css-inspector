@@ -1,10 +1,14 @@
 import { readable } from "svelte/store";
 
-const tailwind = Array.from(document.styleSheets).find(styleSheet =>
-  styleSheet.href.includes("tailwind")
-);
+const sheets = Array.from(document.styleSheets);
 
-const cssRules = Array.from(tailwind.cssRules)
+// TODO Potentially limit by `data-sheet-with=".bg-purple"` or something
+// .find(styleSheet => styleSheet.href.includes("tailwind") );
+
+const cssRules = sheets
+  .reduce((acc, sheet) => {
+    return acc.concat(Array.from(sheet.cssRules));
+  }, [])
   .filter(cssRule => {
     if (cssRule.type !== 1) {
       return false;
