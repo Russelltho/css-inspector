@@ -6,6 +6,7 @@
 
   import Rule from "./Rule.svelte";
   import { cssRules, currentRule, query, target } from "./stores";
+  import { styleWith } from "./styles";
   import { getClassName } from "./utils";
 
   let search;
@@ -153,21 +154,21 @@
 <svelte:window on:keydown={handleKeyDown} />
 
 <aside
-  class="h-full w-64 flex flex-col bg-grey-darkest fixed pin-b pin-r text-white shadow-lg border-l"
+  class={styleWith("h-full w-64 flex flex-col bg-gray-800 fixed pin-b pin-r text-white shadow-lg border-l")}
   transition:fly="{{ x: 255, duration: 300 }}"
   on:outrostart={transitionBody}
 >
   <input
     bind:this={search}
     bind:value={$query}
-    class="shadow-md bg-grey-darker focus:bg-white border-transparent focus:border-blue-light p-2 static"
+    class={styleWith("text-black shadow-md bg-gray-700 focus:bg-white border-transparent focus:border-blue-light p-2 static")}
     focus
     placeholder='Search...'
   />
 
-  <ul class="pb-2 list-reset overflow-auto">
+  <ul class={styleWith("pb-2 list-reset overflow-auto")}>
     <li>
-      <label class="shadow-inner sticky pin-t block text-xs opacity-75 px-2 py-1 my-2 tracking-wide bg-black">
+      <label class={styleWith("shadow-inner sticky pin-t block text-sm opacity-75 px-2 py-1 my-2 tracking-wide bg-black")}>
         Current Styles
       </label>
 
@@ -178,9 +179,9 @@
 
     {#each groupedRules as [name, rules]}
       <li>
-        <label class="shadow-inner sticky pin-t block text-xs px-2 py-1 my-2 tracking-wide bg-black">
+        <label class={styleWith("shadow-inner sticky pin-t block text-sm px-2 py-1 my-2 tracking-wide bg-black")}>
           {name}
-          <small class="float-right rounded bg-black px-1 py-px bg-grey-darkest">{rules.length}</small>
+          <small class={styleWith("float-right rounded bg-black px-1 py-px bg-gray-900")}>{rules.length}</small>
         </label>
 
         {#each rules as rule (rule.selectorText)}
