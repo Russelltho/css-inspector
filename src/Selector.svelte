@@ -1,5 +1,6 @@
 <script>
   import { target } from "./stores";
+  import { styleWith } from "./styles";
 
   function isEligible(node) {
     return (
@@ -27,7 +28,7 @@
 
 {#if rect}
   <div
-    class="fixed pin-t pin-l w-full h-full bg-grey-darker opacity-50 pointer-events-none text-black"
+    class={styleWith("fixed pin-t pin-l w-full h-full bg-gray-600 opacity-50 pointer-events-none text-black")}
     style="transition: all 200ms ease-in-out; clip-path: polygon(0 0, 100% 0, 100% 100%, {rect.right}px 100%, {rect.right}px {rect.top}px, {rect.left}px {rect.top}px, {rect.left}px {rect.bottom}px, {rect.right}px {rect.bottom}px, {rect.right}px 100%, 0 100%)"
   />
 {/if}
