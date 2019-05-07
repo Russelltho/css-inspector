@@ -19,5 +19,9 @@
     "dev": "run-p start:dev autobuild",
     "start": "sirv public",
     "start:dev": "sirv public --dev"
+  },
+  "dependencies": {
+    "benefit": "^0.2.9",
+    "emotion": "^10.0.9"
   }
 }

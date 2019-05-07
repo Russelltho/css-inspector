@@ -1,4 +1,5 @@
 <script>
+  import { benefit } from "benefit";
   import { groupBy } from "lodash-es";
   import { fly } from "svelte/transition";
   import { onMount } from "svelte";
