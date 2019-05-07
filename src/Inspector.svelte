@@ -1,5 +1,4 @@
 <script>
-  import benefit from "benefit";
   import { groupBy } from "lodash-es";
   import { fly } from "svelte/transition";
   import { onMount } from "svelte";
@@ -8,8 +7,6 @@
   import Rule from "./Rule.svelte";
   import { cssRules, currentRule, query, target } from "./stores";
   import { getClassName } from "./utils";
-
-  const { styleWith } = benefit();
 
   let search;
 

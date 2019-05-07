@@ -1,12 +1,13 @@
 <script>
   import { currentRule, target } from "./stores";
+  import { styleWith } from "./styles";
   import { getClassName } from "./utils";
 
   export let rule;
 </script>
 
 <li
-  class="cursor-pointer flex items-start font-mono font-hairline text-xs py-1 px-2 hover:bg-grey-dark"
+  class={styleWith("cursor-pointer flex items-start font-mono font-hairline text-sm py-1 px-2 hover:bg-gray-600")}
   on:mouseenter={() => $currentRule = rule}
   on:mouseleave={() => $currentRule = null}
   on:click
